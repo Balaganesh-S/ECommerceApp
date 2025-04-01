@@ -3,6 +3,7 @@ using ECommerceApp.Data;
 using ECommerceApp.Domain;
 using ECommerceApp.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 namespace ECommerceApp.Repositories
 {
@@ -18,13 +19,13 @@ namespace ECommerceApp.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<ProductDto> CreateProductAsync(int categoryId, ProductDto productDto)
+        public async Task<Product> CreateProductAsync(int categoryId, Product product)
         {
-            if (productDto == null)
+            if (product == null)
             {
-                throw new ArgumentNullException(nameof(productDto));
+                throw new ArgumentNullException(nameof(product));
             }
-            Product product = mapper.Map<Product>(productDto);
+            
             Category category = await categoryRepository.GetCategoryEntityByIdAsync(categoryId);
             if (category == null)
             {
@@ -35,10 +36,10 @@ namespace ECommerceApp.Repositories
             category.Products.Add(product);
             dbContext.Products.Add(product);
             await dbContext.SaveChangesAsync();
-            return mapper.Map<ProductDto>(product);
+            return product;
         }
 
-        public async Task<ProductDto> DeleteProductAsync(int id)
+        public async Task<Product> DeleteProductAsync(int id)
         {
             Product product = await dbContext.Products.FindAsync(id);
             if (product == null)
@@ -49,49 +50,47 @@ namespace ECommerceApp.Repositories
             dbContext.Products.Remove(product);
             await dbContext.SaveChangesAsync();
 
-            return mapper.Map<ProductDto>(product);
+            return product;
         }
 
 
 
-        public async Task<ProductDto> GetProductByIdAsync(int id)
+        public async Task<Product> GetProductByIdAsync(int id)
         {
             Product product = await dbContext.Products.FindAsync(id);
             if (product == null)
             {
                 throw new ArgumentNullException(nameof(product));
             }
-            return mapper.Map<ProductDto>(product);
+            return product;
         }
 
-        public async Task<List<ProductDto>> GetProductsAsync()
+        public async Task<List<Product>> GetProductsAsync()
         {
             var products = await dbContext.Products.ToListAsync();
-            return mapper.Map<List<ProductDto>>(products);
+            return products;
         }
 
-        public async Task<List<ProductDto>> GetProductsByCategoryAsync(int categoryId)
+        public async Task<List<Product>> GetProductsByCategoryAsync(int categoryId)
         {
             var products = await dbContext.Products.Where(p => p.CategoryId == categoryId).ToListAsync();
-            return mapper.Map<List<ProductDto>>(products);
+            return products;
         }
 
-        public async Task<List<ProductDto>> GetProductByKeywordAsync(string keyword)
+        public async Task<List<Product>> GetProductByKeywordAsync(string keyword)
         {
             var products = await dbContext.Products.Where(p => p.Name.Contains(keyword)).ToListAsync();
-            return mapper.Map<List<ProductDto>>(products);
+            return products;
         }
 
 
 
-        public async Task<ProductDto> UpdateProductAsync(int productId, ProductDto productDto)
+        public async Task<Product> UpdateProductAsync(int productId, Product product)
         {   
-            productDto.Id = productId;
-            if (productDto == null)
+            if (product == null)
             {
-                throw new ArgumentNullException(nameof(productDto));
+                throw new ArgumentNullException(nameof(product));
             }
-            Product product = mapper.Map<Product>(productDto);
             var existingProduct = await dbContext.Products.FindAsync(productId);
             if (existingProduct == null)
             {
@@ -106,14 +105,26 @@ namespace ECommerceApp.Repositories
             
            
 
-            await dbContext.SaveChangesAsync(); 
+            await dbContext.SaveChangesAsync();
 
-            return mapper.Map<ProductDto>(existingProduct); 
+            return existingProduct;
         }
 
         public async Task<int> GetProductCountAsync()
         {
             return await dbContext.Products.CountAsync();
+        }
+
+        public async Task<int> GetProductQuantityByID(int productId)
+        {
+            Product product = await dbContext.Products.FindAsync(productId);
+            return product.Quantity;
+        }
+        public async Task DecreaseProductQuantityAsync(int productId, int quantity)
+        {
+            Product product = await dbContext.Products.FindAsync(productId);
+            product.Quantity=product.Quantity-quantity;
+            await dbContext.SaveChangesAsync();
         }
     }
 }

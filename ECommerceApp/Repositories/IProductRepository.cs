@@ -5,13 +5,17 @@ namespace ECommerceApp.Repositories
 {
     public interface IProductRepository
     {
-        Task<List<ProductDto>> GetProductsAsync();
-        Task<ProductDto> GetProductByIdAsync(int id);
-        Task<ProductDto> CreateProductAsync(int categoryId, ProductDto productDto);
-        Task<ProductDto> UpdateProductAsync(int productId, ProductDto productDto);
-        Task<List<ProductDto>> GetProductsByCategoryAsync(int categoryId);
-        Task<ProductDto> DeleteProductAsync(int id);
-        Task<List<ProductDto>> GetProductByKeywordAsync(string keyword);
+        Task<List<Product>> GetProductsAsync();
+        Task<Product> GetProductByIdAsync(int id);
+        Task<Product> CreateProductAsync(int categoryId, Product product);
+        Task<Product> UpdateProductAsync(int productId, Product product);
+        Task<List<Product>> GetProductsByCategoryAsync(int categoryId);
+        Task<Product> DeleteProductAsync(int id);
+        Task<List<Product>> GetProductByKeywordAsync(string keyword);
         Task<int> GetProductCountAsync();
+
+        Task<int> GetProductQuantityByID(int productId);
+
+        Task DecreaseProductQuantityAsync(int productId, int quantity);
     }
 }

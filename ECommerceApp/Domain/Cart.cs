@@ -16,6 +16,6 @@ namespace ECommerceApp.Domain
 
         public double TotalPrice { get; set; } = 0.0;
 
-        public virtual ICollection<CartItem> Items { get; set; }
+        public virtual ICollection<CartItem> Items { get; set; } = new List<CartItem>();
     }
 }

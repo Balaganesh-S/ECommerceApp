@@ -16,10 +16,12 @@ namespace ECommerceApp.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly ITokenRepository tokenRepository;
-        public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository)
+        private readonly IUserRepository userRepository;
+        public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository, IUserRepository userRepository)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
+            this.userRepository = userRepository;
         }
 
         [HttpPost]
@@ -39,7 +41,8 @@ namespace ECommerceApp.Controllers
                     var IdentityResult = await userManager.AddToRolesAsync(user, model.Roles);
                     if (IdentityResult.Succeeded)
                     {
-                        return Ok("User was registered! Please Login.");
+                        await userRepository.CreateUserAsync(new UserDto { Email = model.Email });
+                        return Ok("User "+ model.Email+" was registered! Please Login.");
                     }
                 }
             }

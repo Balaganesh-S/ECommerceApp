@@ -4,6 +4,7 @@ using ECommerceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerceApp.Migrations
 {
     [DbContext(typeof(ECommerceAppContext))]
-    partial class ECommerceAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250326180806_FixedAddressIssue")]
+    partial class FixedAddressIssue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,9 @@ namespace ECommerceApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -58,6 +64,9 @@ namespace ECommerceApp.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -141,9 +150,6 @@ namespace ECommerceApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AddressId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -159,8 +165,6 @@ namespace ECommerceApp.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.ToTable("orders");
                 });
@@ -292,11 +296,19 @@ namespace ECommerceApp.Migrations
 
             modelBuilder.Entity("ECommerceApp.Domain.Address", b =>
                 {
+                    b.HasOne("ECommerceApp.Domain.Order", "Order")
+                        .WithOne("Address")
+                        .HasForeignKey("ECommerceApp.Domain.Address", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ECommerceApp.Domain.User", "User")
                         .WithMany("Address")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Order");
 
                     b.Navigation("User");
                 });
@@ -323,17 +335,6 @@ namespace ECommerceApp.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("ECommerceApp.Domain.Order", b =>
-                {
-                    b.HasOne("ECommerceApp.Domain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Address");
                 });
 
             modelBuilder.Entity("ECommerceApp.Domain.OrderItem", b =>
@@ -387,6 +388,9 @@ namespace ECommerceApp.Migrations
 
             modelBuilder.Entity("ECommerceApp.Domain.Order", b =>
                 {
+                    b.Navigation("Address")
+                        .IsRequired();
+
                     b.Navigation("OrderItems");
 
                     b.Navigation("Payment")

@@ -15,21 +15,21 @@ namespace ECommerceApp.Repositories
             this.dbContext = dbContext;
             this.mapper = mapper;
         }
-        public async Task<CategoryDto> CreateCategoryAsync(CategoryDto categoryDto)
+        public async Task<Category> CreateCategoryAsync(Category category)
         {
-            if (categoryDto == null)
+            if (category == null)
             {
-                throw new ArgumentNullException(nameof(categoryDto));
+                throw new ArgumentNullException(nameof(category));
             }
-            Category category = mapper.Map<Category>(categoryDto);
+            
             dbContext.Categories.Add(category);
             await dbContext.SaveChangesAsync();
 
-            return mapper.Map<CategoryDto>(category);
+            return category;
         }
 
 
-        public async Task<CategoryDto> DeleteCategoryAsync(int id)
+        public async Task<Category> DeleteCategoryAsync(int id)
         {
             Category category = await dbContext.Categories.FindAsync(id);
             if (category == null)
@@ -38,24 +38,24 @@ namespace ECommerceApp.Repositories
             }
             dbContext.Remove(category);
             await dbContext.SaveChangesAsync();
-            return mapper.Map<CategoryDto>(category);
+            return category;
         }
 
-        public async Task<List<CategoryDto>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync()
         {
             List<Category> categories = await dbContext.Categories.ToListAsync();
-            return mapper.Map<List<CategoryDto>>(categories);
+            return categories;
         }
 
 
-        public async Task<CategoryDto> GetCategoryByIdAsync(int id)
+        public async Task<Category> GetCategoryByIdAsync(int id)
         {
             Category category = await dbContext.Categories.FindAsync(id);
             if (category == null)
             {
                 throw new ArgumentNullException(nameof(category));
             }
-            return mapper.Map<CategoryDto>(category);
+            return category;
         }
 
         public async Task<Category> GetCategoryEntityByIdAsync(int categoryId)
@@ -69,19 +69,18 @@ namespace ECommerceApp.Repositories
             return category;
         }
 
-        public async Task<CategoryDto> UpdateCategoryAsync(int categoryId, CategoryDto categoryDto)
+        public async Task<Category> UpdateCategoryAsync(int categoryId, Category category)
         {
-            categoryDto.Id = categoryId;
             Category existingCategory = dbContext.Categories.Find(categoryId);
             if (existingCategory == null)
             {
                 throw new KeyNotFoundException($"Category with ID {categoryId} not found");
             }
-            existingCategory.Name = categoryDto.Name;
+            existingCategory.Name = category.Name;
 
             await dbContext.SaveChangesAsync();
 
-            return mapper.Map<CategoryDto>(existingCategory);
+            return existingCategory;
 
 
         }

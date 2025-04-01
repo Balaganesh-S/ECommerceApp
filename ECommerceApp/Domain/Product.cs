@@ -22,6 +22,9 @@ namespace ECommerceApp.Domain
         public virtual Category? Category { get; set; }
 
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+        [JsonIgnore]
+        public virtual List<OrderItem> OrderItem { get; set; } = new List<OrderItem>();
+
 
     }
 }

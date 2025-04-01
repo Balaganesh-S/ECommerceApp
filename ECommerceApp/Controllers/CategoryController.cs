@@ -1,6 +1,7 @@
 ﻿using ECommerceApp.Domain;
 using ECommerceApp.DTO;
 using ECommerceApp.Repositories;
+using ECommerceApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,51 +12,45 @@ namespace ECommerceApp.Controllers
 
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryRepository categoryRepository;
-        public CategoryController(ICategoryRepository categoryRepository) {
-            this.categoryRepository = categoryRepository;
+        private readonly ICategoryService categoryService;
+        public CategoryController(ICategoryService categoryService) {
+            this.categoryService = categoryService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var categories = await categoryRepository.GetCategoriesAsync();
-            return Ok(categories);
+            var response = await categoryService.GetCategoriesAsync();
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
-            var category = await categoryRepository.GetCategoryByIdAsync(id);
-            if (category == null)
-                return NotFound();
-            return Ok(category);
+            var response = await categoryService.GetCategoryByIdAsync(id);
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCategory([FromBody] CategoryDto categoryDto)
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryRequestDto categoryRequestDto)
         {
-            if (categoryDto == null)
-                return BadRequest("Invalid category data.");
-            var createdCategory = await categoryRepository.CreateCategoryAsync(categoryDto);
-            return Created($"{Request.Scheme}://{Request.Host}{Request.Path}/{createdCategory.Id}", createdCategory);
+            var response = await categoryService.CreateCategoryAsync(categoryRequestDto);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> UpdateCategory([FromRoute] int id, [FromBody] CategoryDto categoryDto)
+        public async Task<IActionResult> UpdateCategory([FromRoute] int id, [FromBody] CategoryRequestDto categoryRequestDto)
         {
-            if (categoryDto == null)
-                return BadRequest("Invalid category data.");
-            var updatedCategory = await categoryRepository.UpdateCategoryAsync(id,categoryDto);
-            return Ok(updatedCategory);
+            var response = await categoryService.UpdateCategoryAsync(id,categoryRequestDto);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var deletedCategory = await categoryRepository.DeleteCategoryAsync(id);
-            return Ok(deletedCategory);
+            var response = await categoryService.DeleteCategoryAsync(id);
+            return Ok(response);
         }
     }
 }

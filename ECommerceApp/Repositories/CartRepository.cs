@@ -1,6 +1,8 @@
 ﻿using ECommerceApp.Data;
 using ECommerceApp.Domain;
+using ECommerceApp.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 
 namespace ECommerceApp.Repositories
 {
@@ -13,6 +15,30 @@ namespace ECommerceApp.Repositories
             this.dbContext= dbContext;
         }
 
+        public async Task ClearCartAsync(string userEmail)
+        {
+            var cart = await dbContext.Carts
+                .Include(c => c.Items)
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.User.Email == userEmail);
+
+            if (cart != null)
+            {
+                dbContext.CartItems.RemoveRange(cart.Items); // Remove all items from the cart
+                await dbContext.SaveChangesAsync(); // Save the changes
+            }
+        }
+
+
+        public async Task<Cart> GetCartByIdAsync(int cartId)
+        { 
+
+
+            return await dbContext.Carts
+                .Include(c => c.Items) // Load related cart items
+                .FirstOrDefaultAsync(c => c.Id == cartId);
+        }
+
         public async Task<Cart> GetCartByUserEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -23,6 +49,15 @@ namespace ECommerceApp.Repositories
             return await dbContext.Carts
                 .Include(c => c.Items) // Load related cart items
                 .FirstOrDefaultAsync(c => c.User.Email == email);
+        }
+
+        
+
+        public Task<List<Cart>> GetCartsAsync()
+        {
+            return dbContext.Carts
+                .Include(c => c.Items) 
+                .ToListAsync();
         }
 
         public async Task SaveCartAsync(Cart cart)

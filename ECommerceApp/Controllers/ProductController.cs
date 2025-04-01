@@ -1,6 +1,8 @@
-﻿using ECommerceApp.Domain;
+﻿using Azure;
+using ECommerceApp.Domain;
 using ECommerceApp.DTO;
 using ECommerceApp.Repositories;
+using ECommerceApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +16,11 @@ namespace ECommerceApp.Controllers
     
     public class ProductController : ControllerBase
     {
-        private readonly IProductRepository productRepository;
+        private readonly IProductService productService;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(IProductService productService)
         {
-            this.productRepository = productRepository;
+            this.productService = productService;
         }
 
         [HttpGet]
@@ -26,8 +28,8 @@ namespace ECommerceApp.Controllers
         //[Authorize(Roles = "Reader, Writer")]
         public async Task<IActionResult> GetProducts()
         {
-            var products = await productRepository.GetProductsAsync();
-            return Ok(products);
+            var response = await productService.GetProductsAsync();
+            return StatusCode((int)response.StatusCode, response);
         }
 
         //[HttpGet("{id}")]
@@ -44,35 +46,28 @@ namespace ECommerceApp.Controllers
         [HttpPost]
         [Route("api/categories/{categoryId}/product")]
         //[Authorize(Roles = "Writer")]
-        public async Task<IActionResult> CreateProduct([FromRoute] int categoryId, [FromBody] ProductDto productDto)
+        public async Task<IActionResult> CreateProduct([FromRoute] int categoryId, [FromBody] ProductRequestDto productRequestDto)
         {
-            if (productDto == null)
-                return BadRequest("Invalid product data.");
-            var createdProductDto = await productRepository.CreateProductAsync(categoryId, productDto);
-            return Created($"{Request.Scheme}://{Request.Host}{Request.Path}/{createdProductDto.Id}", createdProductDto);
+            var response = await productService.CreateProductAsync(categoryId, productRequestDto);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPut]
         [Route("api/products/{productId}")]
         //[Authorize(Roles = "Writer")]
-        public async Task<IActionResult> UpdateProduct([FromRoute] int productId, [FromBody] ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct([FromRoute] int productId, [FromBody] ProductRequestDto productRequestDto)
         {
-            if (productDto == null)
-                return BadRequest("Invalid product data.");
-
-            var updatedProductDto = await productRepository.UpdateProductAsync(productId,productDto);
-            return Ok(updatedProductDto);
+            var response = await productService.UpdateProductAsync(productId,productRequestDto);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpDelete("{id}")]
         //[Authorize(Roles = "Writer")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            var deletedProductDto = await productRepository.DeleteProductAsync(id);
-            if (deletedProductDto == null)
-                return NotFound();
+            var response = await productService.DeleteProductAsync(id);
 
-            return Ok(deletedProductDto);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpGet]
@@ -80,8 +75,8 @@ namespace ECommerceApp.Controllers
         //[Authorize(Roles = "Reader, Writer")]
         public async Task<IActionResult> GetProductsByCategory(int categoryId)
         {
-            var productDtos = await productRepository.GetProductsByCategoryAsync(categoryId);
-            return Ok(productDtos);
+            var response = await productService.GetProductsByCategoryAsync(categoryId);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpGet]
@@ -89,8 +84,8 @@ namespace ECommerceApp.Controllers
         //[Authorize(Roles = "Reader, Writer")]
         public async Task<IActionResult> GetProductsByKeyword(string keyword)
         {
-            var productDtos = await productRepository.GetProductByKeywordAsync(keyword);
-            return Ok(productDtos);
+            var response = await productService.GetProductByKeywordAsync(keyword);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpGet]
@@ -98,8 +93,8 @@ namespace ECommerceApp.Controllers
         //[Authorize(Roles = "Reader, Writer")]
         public async Task<IActionResult> GetProductCount()
         {
-            var count = await productRepository.GetProductCountAsync();
-            return Ok(count);
+            var response = await productService.GetProductCountAsync();
+            return StatusCode((int)response.StatusCode, response);
         }
 
     }
